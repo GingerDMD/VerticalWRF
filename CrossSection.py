@@ -17,8 +17,8 @@ ___author___ = "Preston Wilson, modified from example code on http://wrf-python.
 
 dir_list = raw_input("Enter directory to be evaluated: ")  # example: wrf\* for all files in wrf directory on Windows OS
 new_dir_list = dir_list.split('\\')
-if not os.path.exists('UpdatedPlots/'):
-                os.makedirs('UpdatedPlots/')
+if not os.path.exists('UpdatedPlots_' + new_dir_list[len(new_dir_list) - 2] + '/'):
+                os.makedirs('UpdatedPlots_' + new_dir_list[len(new_dir_list) - 2] + '/')
 for wrffile in glob.iglob(dir_list):
     if fnmatch.fnmatch(wrffile, '[wrf]*'):
         print "Evaluating file " + wrffile
@@ -103,7 +103,8 @@ for wrffile in glob.iglob(dir_list):
             # Add a title
             ax_wspd.set_title("Cross-Section of Wind Speed (kt)", {"fontsize": 8})
             fin_name = wrffile.split('\\')
-            plt.savefig('UpdatedPlots/' + fin_name[len(fin_name) - 1] + '_plot.png')
+            plt.savefig('UpdatedPlots_' + new_dir_list[len(new_dir_list) - 2] + '/' +
+                        fin_name[len(fin_name) - 1] + '_plot.png')
         except Exception as e:
             print "Error: " + e
 
