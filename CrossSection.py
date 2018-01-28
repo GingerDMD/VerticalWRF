@@ -9,6 +9,7 @@ import fnmatch
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
+from matplotlib import ticker
 from netCDF4 import Dataset
 from wrf import (getvar, to_np, vertcross, smooth2d, CoordPair, GeoBounds, get_cartopy,
                  latlon_coords)
@@ -68,10 +69,13 @@ for wrffile in glob.iglob(dir_list):
                                CoordPair(lat=30.0, lon=-72.0))
 
         # Make the contour plot for wind speed
-        wspd_contours = ax_wspd.contourf(to_np(wspd_cross), cmap=get_cmap("jet"))
+        wspd_contours = ax_wspd.contourf(to_np(wspd_cross), cmap=get_cmap("jet"), levels=np.linspace(0, 64, 32))
         # Add the color bar
         cb_wspd = fig.colorbar(wspd_contours, ax=ax_wspd)
+        # tick_locator = ticker.MaxNLocator(nbins=5)
+        # cb_wspd.locator = tick_locator
         cb_wspd.ax.tick_params(labelsize=7)
+        # cb_wspd.update_ticks()
 
         # Make the contour plot for dbz
         levels = [5 + 5*n for n in range(15)]
@@ -98,11 +102,11 @@ for wrffile in glob.iglob(dir_list):
         # Set the x-axis and  y-axis labels
         ax_wspd.set_ylabel("Height (m)", fontsize=7)
 
-
         try:
             # Add a title
             ax_wspd.set_title("Cross-Section of Wind Speed (kt)", {"fontsize": 8})
             fin_name = wrffile.split('\\')
+            plt.show()
             plt.savefig('UpdatedPlots_' + new_dir_list[len(new_dir_list) - 2] + '/' +
                         fin_name[len(fin_name) - 1] + '_plot.png')
         except Exception as e:
