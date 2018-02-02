@@ -21,7 +21,8 @@ new_dir_list = dir_list.split('\\')
 if not os.path.exists('UpdatedPlots_' + new_dir_list[len(new_dir_list) - 2] + '/'):
                 os.makedirs('UpdatedPlots_' + new_dir_list[len(new_dir_list) - 2] + '/')
 for wrffile in glob.iglob(dir_list):
-    if fnmatch.fnmatch(wrffile, '[wrf]*'):
+    print wrffile
+    if fnmatch.fnmatch(wrffile, '*[wrfout]*'):
         print "Evaluating file " + wrffile
         ncfile = Dataset(wrffile)
 
@@ -106,11 +107,11 @@ for wrffile in glob.iglob(dir_list):
             # Add a title
             ax_wspd.set_title("Cross-Section of Wind Speed (kt)", {"fontsize": 8})
             fin_name = wrffile.split('\\')
-            plt.show()
+            # plt.show()
             plt.savefig('UpdatedPlots_' + new_dir_list[len(new_dir_list) - 2] + '/' +
                         fin_name[len(fin_name) - 1] + '_plot.png')
         except Exception as e:
-            print "Error: " + e
+            print "Error: " + str(e)
 
 
 
