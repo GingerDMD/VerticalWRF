@@ -9,7 +9,6 @@ import fnmatch
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
-from matplotlib import ticker
 from netCDF4 import Dataset
 from wrf import (getvar, to_np, vertcross, smooth2d, CoordPair, GeoBounds, get_cartopy,
                  latlon_coords)
@@ -22,7 +21,9 @@ if not os.path.exists('UpdatedPlots_' + new_dir_list[len(new_dir_list) - 2] + '/
                 os.makedirs('UpdatedPlots_' + new_dir_list[len(new_dir_list) - 2] + '/')
 for wrffile in glob.iglob(dir_list):
     print wrffile
-    if fnmatch.fnmatch(wrffile, '*[wrfout]*'):
+    # checks for files that contain the string expression; if no error but  not creating plots, consider changing this
+    # necessary check because if non-WRF files are present in the directory, it will try to plot them and break
+    if fnmatch.fnmatch(wrffile, '*[wrf]*'):
         print "Evaluating file " + wrffile
         ncfile = Dataset(wrffile)
 
@@ -37,7 +38,8 @@ for wrffile in glob.iglob(dir_list):
 
         # Set the start point and end point for the cross section
         start_point = CoordPair(lat=36.99464, lon=-82.37988)
-        end_point = CoordPair(lat=35.53535, lon=-81.08899)  # For some reason -81.08899 as the y-endpoint gives an error
+        end_point = CoordPair(lat=35.53535, lon=-81.08899)
+        end_point_zoom = CoordPair(lat=35.53535, lon=-81.08899)
 
         # Compute the vertical cross-section interpolation.  Also, include the lat/lon
         # points along the cross-section in the metadata by setting latlon to True.
@@ -53,30 +55,22 @@ for wrffile in glob.iglob(dir_list):
         # Get the cartopy projection object
         cart_proj = get_cartopy(slp)
 
-        # Create a figure that will have 3 subplots
-        fig = plt.figure(figsize=(10,7))
+        fig = plt.figure(figsize=(10, 10))
 
-        # Initially had 3 suplots, changed so only wind speed is shown
-        ax_wspd = fig.add_subplot(1,1,1)
-
-        # Make the pressure contours
-        contour_levels = [960, 965, 970, 975, 980, 990]
-
-        # Create the filled cloud top temperature contours
-        contour_levels = [-80.0, -70.0, -60, -50, -40, -30, -20, -10, 0, 10]
-
-        # Crop the domain to the region around the hurricane
-        hur_bounds = GeoBounds(CoordPair(lat=np.amin(to_np(lats)), lon=-85.0),
-                               CoordPair(lat=30.0, lon=-72.0))
+        ax_wspd = fig.add_subplot(2, 1, 1)
+        ax_wspd_zoom = fig.add_subplot(2, 1, 2)
 
         # Make the contour plot for wind speed
-        wspd_contours = ax_wspd.contourf(to_np(wspd_cross), cmap=get_cmap("jet"), levels=np.linspace(0, 64, 32))
+        wspd_contours = ax_wspd.contourf(to_np(wspd_cross), cmap=get_cmap("jet"), levels=np.linspace(0, 64, 512))
+        wspd_contours_zoom = ax_wspd_zoom.contourf(to_np(wspd_cross), cmap=get_cmap("hot"), levels=np.linspace(0, 64, 512))
+
         # Add the color bar
         cb_wspd = fig.colorbar(wspd_contours, ax=ax_wspd)
-        # tick_locator = ticker.MaxNLocator(nbins=5)
+        cb_wspd_zoom = fig.colorbar(wspd_contours_zoom, ax=ax_wspd_zoom)
+
         # cb_wspd.locator = tick_locator
         cb_wspd.ax.tick_params(labelsize=7)
-        # cb_wspd.update_ticks()
+        cb_wspd_zoom.ax.tick_params(labelsize=7)
 
         # Make the contour plot for dbz
         levels = [5 + 5*n for n in range(15)]
@@ -85,29 +79,35 @@ for wrffile in glob.iglob(dir_list):
         coord_pairs = to_np(dbz_cross.coords["xy_loc"])
         x_ticks = np.arange(coord_pairs.shape[0])
         x_labels = [pair.latlon_str() for pair in to_np(coord_pairs)]
-        ax_wspd.set_xticks(x_ticks[::20])
-        ax_wspd.set_xticklabels([], rotation=45)
+
+        ax_wspd.set_xticks(x_ticks[::30])
+        ax_wspd.set_xticklabels(x_labels[::30], fontsize=7, rotation=15)
+        ax_wspd_zoom.set_xticks(x_ticks[::30])
+        ax_wspd_zoom.set_xticklabels(x_labels[::30], fontsize=7, rotation=15)
 
         # Set the y-ticks to be height
-        vert_vals = to_np(dbz_cross.coords["vertical"])
-
-        # My quick attempt at making max height 15000; I think it works, but it messes up the y-axis labels and ticks
-        # Commented out for now
-        # vert_vals.flatten()
-        # vert_vals = [i for i in vert_vals if i < 15000]
+        vert_vals = to_np(dbz_cross.coords["vertical"]).astype(int)
+        print dbz_cross.coords["vertical"]
 
         v_ticks = np.arange(vert_vals.shape[0])
-        ax_wspd.set_yticks(v_ticks[::20])
-        ax_wspd.set_yticklabels(vert_vals[::20], fontsize=7)
+        v_ticks_zoom = np.arange(vert_vals.shape[0])
+        ax_wspd.set_yticks(v_ticks[::10])  # every 10 ax_wspd values serve as tick mark
+        ax_wspd.set_yticklabels(vert_vals[::10], fontsize=7)
+        ax_wspd_zoom.set_yticks(v_ticks[::10])
+        ax_wspd_zoom.set_yticklabels(vert_vals[::10], fontsize=7)
 
         # Set the x-axis and  y-axis labels
         ax_wspd.set_ylabel("Height (m)", fontsize=7)
+        ax_wspd_zoom.set_ylabel("Height (m)", fontsize=7)
 
         try:
             # Add a title
-            ax_wspd.set_title("Cross-Section of Wind Speed (kt)", {"fontsize": 8})
+            ax_wspd.set_title("Cross-Section of Wind Speed (kt)\n"
+                              "SP: lat=36.99464, lon=-82.37988\n"
+                              "EP: lat=35.53535, lon=-81.08899", {"fontsize": 10})
+            # ax_wspd_zoom.set_title("Zoomed Cross-Section of Lower Elevation Wind Speed", {"fontsize": 8})
             fin_name = wrffile.split('\\')
-            # plt.show()
+            plt.show()
             plt.savefig('UpdatedPlots_' + new_dir_list[len(new_dir_list) - 2] + '/' +
                         fin_name[len(fin_name) - 1] + '_plot.png')
         except Exception as e:
