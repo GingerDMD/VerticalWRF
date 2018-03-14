@@ -34,7 +34,7 @@ for wrffile in glob.iglob(dir_list):
         z = getvar(ncfile, "z")
         dbz = getvar(ncfile, "dbz")
         Z = 10**(dbz/10.)
-        wspd = getvar(ncfile, "wspd_wdir", units="kt")[0,:]
+        wspd = getvar(ncfile, "wspd_wdir", units="m/s")[0,:]
 
         # Set the start point and end point for the cross section
         start_point = CoordPair(lat=36.99464, lon=-82.37988)
@@ -107,7 +107,7 @@ for wrffile in glob.iglob(dir_list):
                               "EP: lat=35.53535, lon=-81.08899", {"fontsize": 10})
             # ax_wspd_zoom.set_title("Zoomed Cross-Section of Lower Elevation Wind Speed", {"fontsize": 8})
             fin_name = wrffile.split('\\')
-            # plt.show()
+            plt.show()
             plt.savefig('UpdatedPlots_' + new_dir_list[len(new_dir_list) - 2] + '/' +
                         fin_name[len(fin_name) - 1] + '_plot.png')
         except Exception as e:
