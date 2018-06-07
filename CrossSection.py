@@ -37,9 +37,8 @@ for wrffile in glob.iglob(dir_list):
         wspd = getvar(ncfile, "wspd_wdir", units="m/s")[0,:]
 
         # Set the start point and end point for the cross section
-        start_point = CoordPair(lat=36.99464, lon=-82.37988)
-        end_point = CoordPair(lat=35.53535, lon=-81.08899)
-        end_point_zoom = CoordPair(lat=35.53535, lon=-81.08899)
+        start_point = CoordPair(lat=36.3134, lon=-81.3535)
+        end_point = CoordPair(lat=35.9132, lon=-79.0558)
 
         # Compute the vertical cross-section interpolation.  Also, include the lat/lon
         # points along the cross-section in the metadata by setting latlon to True.
@@ -107,12 +106,13 @@ for wrffile in glob.iglob(dir_list):
         try:
             # Add a title
             ax_wspd.set_title("Cross-Section of Wind Speed (kt)\n"
-                              "SP: lat=36.99464, lon=-82.37988\n"
-                              "EP: lat=35.53535, lon=-81.08899", {"fontsize": 10})
+                              "SP: lat=36.3134, lon=-81.3535\n"
+                              "EP: lat=35.9132, lon=-79.0558", {"fontsize": 10})
             # ax_wspd_zoom.set_title("Zoomed Cross-Section of Lower Elevation Wind Speed", {"fontsize": 8})
-            fin_name = wrffile.split('\\')
+            fin_name = wrffile.split('/')  # need to change to \\ for windows, / for macOS
             # plt.show()
-            plt.savefig('UpdatedPlots_' + new_dir_list[len(new_dir_list) - 2] + '/' +
+            # choose the directory to save it to, may need to create it manually or may automatically create
+            plt.savefig('wrf_20180606_plots/' +
                         fin_name[len(fin_name) - 1] + '_plot.png')
         except Exception as e:
             print "Error: " + str(e)
