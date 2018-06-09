@@ -37,7 +37,7 @@ for wrffile in glob.iglob(dir_list):
         wspd = getvar(ncfile, "wspd_wdir", units="m/s")[0,:]
 
         # Set the start point and end point for the cross section
-        start_point = CoordPair(lat=36.3134, lon=-81.3535)
+        start_point = CoordPair(lat=36.3134, lon=-82.3535)
         end_point = CoordPair(lat=35.9132, lon=-79.0558)
 
         # Compute the vertical cross-section interpolation.  Also, include the lat/lon
@@ -59,13 +59,14 @@ for wrffile in glob.iglob(dir_list):
         ax_wspd = fig.add_subplot(1, 1, 1)
 
         # Make the contour plot for wind speed
-        wspd_contours = ax_wspd.contourf(to_np(wspd_cross), cmap=get_cmap("jet"), levels=np.linspace(0, 64, 512))
+        wspd_contours = ax_wspd.contourf(to_np(wspd_cross), cmap=get_cmap("jet"), levels=np.linspace(0, 80, 400))
 
         # Add the color bar
         cb_wspd = fig.colorbar(wspd_contours, ax=ax_wspd)
 
         # cb_wspd.locator = tick_locator
-        cb_wspd.ax.tick_params(labelsize=7)
+        cb_wspd.ax.tick_params(labelsize=12)
+        cb_wspd.ax.set_yticklabels([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
 
         # Make the contour plot for dbz
         levels = [5 + 5*n for n in range(15)]
@@ -75,8 +76,8 @@ for wrffile in glob.iglob(dir_list):
         x_ticks = np.arange(coord_pairs.shape[0])
         x_labels = [pair.latlon_str() for pair in to_np(coord_pairs)]
 
-        ax_wspd.set_xticks(x_ticks[::30])
-        ax_wspd.set_xticklabels(x_labels[::30], fontsize=7, rotation=15)
+        ax_wspd.set_xticks(x_ticks[::20])
+        ax_wspd.set_xticklabels(x_labels[::20], fontsize=12, rotation=30)
 
         # Set the y-ticks to be height
         vert_vals = to_np(dbz_cross.coords["vertical"]).astype(int)
@@ -84,11 +85,12 @@ for wrffile in glob.iglob(dir_list):
 
         v_ticks = np.arange(vert_vals.shape[0])
 
+        round_vals = range(0, 20000)
         ax_wspd.set_yticks(v_ticks[::10])  # every 10 ax_wspd values serve as tick mark
-        ax_wspd.set_yticklabels(vert_vals[::10], fontsize=7)
+        ax_wspd.set_yticklabels(round_vals[0:20000:2000], fontsize=12)
 
         # Set the x-axis and  y-axis labels
-        ax_wspd.set_ylabel("Height (m)", fontsize=7)
+        ax_wspd.set_ylabel("Height (m)", fontsize=12)
 
         # For the second plot, all grouped together
         # ax_wspd_zoom = fig.add_subplot(2, 1, 2)
@@ -105,9 +107,9 @@ for wrffile in glob.iglob(dir_list):
 
         try:
             # Add a title
-            ax_wspd.set_title("Cross-Section of Wind Speed (kt)\n"
-                              "SP: lat=36.3134, lon=-81.3535\n"
-                              "EP: lat=35.9132, lon=-79.0558", {"fontsize": 10})
+            ax_wspd.set_title("Cross-Section of Wind Speed (m/s)\n"
+                              "Starting Point: lat=" + str(start_point.lat) + " lon=" + str(start_point.lon) + "\n"
+                              "Ending Point: lat=" + str(end_point.lat) + "lon=" + str(end_point.lon), {"fontsize": 14})
             # ax_wspd_zoom.set_title("Zoomed Cross-Section of Lower Elevation Wind Speed", {"fontsize": 8})
             fin_name = wrffile.split('/')  # need to change to \\ for windows, / for macOS
             # plt.show()
